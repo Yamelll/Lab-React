@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { STATUS_LABELS } from '@/features/tasks/constants/task.constants';
 import type { Task, TaskStatus } from '@/features/tasks/types/task.types';
@@ -13,6 +13,7 @@ export const TasksPage = () => {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [title, setTitle] = useState('');
   const [search, setSearch] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const doneCount = tasks.filter((task) => task.status === 'done').length;
 
@@ -20,6 +21,23 @@ export const TasksPage = () => {
     const term = search.trim().toLowerCase();
     return tasks.filter((task) => task.title.toLowerCase().includes(term));
   }, [tasks, search]);
+
+  useEffect(() => {
+    document.title = `Task Manager (${tasks.length - doneCount} pendientes)`;
+  }, [tasks.length, doneCount]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === '/' && document.activeElement !== searchRef.current) {
+        event.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -59,9 +77,10 @@ export const TasksPage = () => {
         <button type="submit">Agregar</button>
       </form>
       <input
+        ref={searchRef}
         value={search}
         onChange={(event) => setSearch(event.target.value)}
-        placeholder="Buscar tarea…"
+        placeholder="Buscar tarea (tecla /)"
       />
       <ul>
         {visible.map((task) => (
