@@ -1,0 +1,16 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 1rem 0;
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.error {
+  color: var(--danger);
+  font-size: 0.9rem;
+}
