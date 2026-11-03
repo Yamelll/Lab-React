@@ -1,17 +1,21 @@
 import { useCallback, useRef } from 'react';
-import { ProgressBar } from '@/components/PogressBar/ProgressBar';
+import { useNavigate } from 'react-router-dom';
+import { ProgressBar } from '@/components/ProgressBar/ProgressBar';
 import { SearchInput } from '@/components/SearchInput/SearchInput';
-import { StatusFilter } from '@/features/tasks/components/StatusFilter/StatusFilter';
-import { TaskCounter } from '@/features/tasks/components/TaskCounter/TaskCounter';
-import { TaskForm } from '@/features/tasks/components/TaskForm/TaskForm';
-import { TaskList } from '@/features/tasks/components/TaskList/TaskList';
-import { useTaskFilter } from '@/features/tasks/hooks/useTaskFilter';
-import { useTasks } from '@/features/tasks/hooks/useTasks';
+import {
+  StatusFilter,
+  TaskCounter,
+  TaskForm,
+  TaskList,
+  useTaskFilter,
+  useTasks,
+} from '@/features/tasks';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 import styles from './TasksPage.module.css';
 
 export const TasksPage = () => {
+  const navigate = useNavigate();
   const { tasks, stats, add, move, remove } = useTasks();
   const { status, setStatus, search, setSearch, filtered } = useTaskFilter(tasks);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -43,7 +47,7 @@ export const TasksPage = () => {
         tasks={filtered}
         onMove={move}
         onRemove={remove}
-        onOpen={(id) => console.log('abrir', id)}
+        onOpen={(id) => navigate(`/tasks/${id}`)}
       />
     </>
   );

@@ -1,21 +1,15 @@
-import { Container } from '@/components/Container/Container';
-import { ProgressBar } from '@/components/PogressBar/ProgressBar';
-import { StatusBadge } from '@/features/tasks/components/StatusBadge/StatusBadge';
-import { TaskCounter } from '@/features/tasks/components/TaskCounter/TaskCounter';
-import { TasksPage } from '@/pages/TasksPage/TasksPage';
+import { useEffect, useState } from 'react';
+import { getErrorMessage } from '@/services/apiError';
+import { doGet } from '@/services/http.service';
 
 export const App = () => {
-  return (
-    <Container>
-      <h1>Task Manager</h1>
-      <TaskCounter done={2} total={5} />
-      <ProgressBar current={2} total={5} />
-      <TasksPage />
-      <p>
-        <StatusBadge status="todo" /> <StatusBadge status="in-progress" />{' '}
-        <StatusBadge status="done" />
-      </p>
-    </Container>
-   
-  );
+  const [message, setMessage] = useState('Consultando…');
+
+  useEffect(() => {
+    doGet<unknown>('/api/tasks')
+      .then(() => setMessage('Respuesta correcta'))
+      .catch((error: unknown) => setMessage(getErrorMessage(error)));
+  }, []);
+
+  return <p>{message}</p>;
 };

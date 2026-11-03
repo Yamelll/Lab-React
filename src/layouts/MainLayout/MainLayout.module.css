@@ -1,0 +1,13 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.8rem 1.5rem;
+  background: var(--accent);
+  color: #fff;
+}
+
+.header a {
+  color: #fff;
+  text-decoration: none;
+}
