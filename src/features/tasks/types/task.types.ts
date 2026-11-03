@@ -6,3 +6,5 @@ export type Task = {
   status: TaskStatus;
   createdAt: string;
 };
+
+export type StatusFilterValue = TaskStatus | 'all';

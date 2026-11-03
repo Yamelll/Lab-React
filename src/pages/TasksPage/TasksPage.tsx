@@ -1,7 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { STATUS_LABELS } from '@/features/tasks/constants/task.constants';
-import type { Task, TaskStatus } from '@/features/tasks/types/task.types';
+import { ProgressBar } from '@/components/PogressBar/ProgressBar';
+import { SearchInput } from '@/components/SearchInput/SearchInput';
+import { StatusFilter } from '@/features/tasks/components/StatusFilter/StatusFilter';
+import { TaskCounter } from '@/features/tasks/components/TaskCounter/TaskCounter';
+import { TaskList } from '@/features/tasks/components/TaskList/TaskList';
+import type {
+  StatusFilterValue,
+  Task,
+  TaskStatus,
+} from '@/features/tasks/types/task.types';
+import styles from './TasksPage.module.css';
 
 const initialTasks: Task[] = [
   { id: '1', title: 'Aprender JSX', status: 'done', createdAt: '2026-08-03T12:00:00.000Z' },
@@ -13,14 +22,24 @@ export const TasksPage = () => {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [title, setTitle] = useState('');
   const [search, setSearch] = useState('');
+  const [status, setStatus] = useState<StatusFilterValue>('all');
   const searchRef = useRef<HTMLInputElement>(null);
 
   const doneCount = tasks.filter((task) => task.status === 'done').length;
 
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return tasks.filter((task) => task.title.toLowerCase().includes(term));
-  }, [tasks, search]);
+    return tasks.filter(
+      (task) =>
+        (status === 'all' || task.status === status) &&
+        task.title.toLowerCase().includes(term),
+    );
+  }, [tasks, status, search]);
+
+  const focusSearch = useCallback((event: KeyboardEvent) => {
+    event.preventDefault();
+    searchRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     document.title = `Task Manager (${tasks.length - doneCount} pendientes)`;
@@ -29,15 +48,14 @@ export const TasksPage = () => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === '/' && document.activeElement !== searchRef.current) {
-        event.preventDefault();
-        searchRef.current?.focus();
+        focusSearch(event);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
 
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [focusSearch]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -56,18 +74,21 @@ export const TasksPage = () => {
     setTitle('');
   };
 
-  const handleMove = (id: string, status: TaskStatus) => {
+  const handleMove = (id: string, newStatus: TaskStatus) => {
     setTasks((previous) =>
-      previous.map((task) => (task.id === id ? { ...task, status } : task)),
+      previous.map((task) => (task.id === id ? { ...task, status: newStatus } : task)),
     );
+  };
+
+  const handleRemove = (id: string) => {
+    setTasks((previous) => previous.filter((task) => task.id !== id));
   };
 
   return (
     <>
       <h1>Mis tareas</h1>
-      <p>
-        {doneCount} de {tasks.length} completadas
-      </p>
+      <TaskCounter done={doneCount} total={tasks.length} />
+      <ProgressBar current={doneCount} total={tasks.length} />
       <form onSubmit={handleSubmit}>
         <input
           value={title}
@@ -76,21 +97,21 @@ export const TasksPage = () => {
         />
         <button type="submit">Agregar</button>
       </form>
-      <input
-        ref={searchRef}
-        value={search}
-        onChange={(event) => setSearch(event.target.value)}
-        placeholder="Buscar tarea (tecla /)"
+      <div className={styles.filters}>
+        <SearchInput
+          ref={searchRef}
+          value={search}
+          onChange={setSearch}
+          placeholder="Buscar tarea (tecla /)"
+        />
+        <StatusFilter value={status} onChange={setStatus} />
+      </div>
+      <TaskList
+        tasks={visible}
+        onMove={handleMove}
+        onRemove={handleRemove}
+        onOpen={(id) => console.log('abrir', id)}
       />
-      <ul>
-        {visible.map((task) => (
-          <li key={task.id}>
-            {task.title} — {STATUS_LABELS[task.status]}
-            <button onClick={() => handleMove(task.id, 'in-progress')}>Iniciar</button>
-            <button onClick={() => handleMove(task.id, 'done')}>Terminar</button>
-          </li>
-        ))}
-      </ul>
     </>
   );
 };

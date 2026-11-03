@@ -1,7 +1,7 @@
 import { Container } from '@/components/Container/Container';
 import { ProgressBar } from '@/components/PogressBar/ProgressBar';
 import { StatusBadge } from '@/features/tasks/components/StatusBadge/StatusBadge';
-import { TaskCounter } from '@/features/tasks/components/TaskCounter';
+import { TaskCounter } from '@/features/tasks/components/TaskCounter/TaskCounter';
 import { TasksPage } from '@/pages/TasksPage/TasksPage';
 
 export const App = () => {
